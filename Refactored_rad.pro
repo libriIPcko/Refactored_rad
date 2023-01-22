@@ -12,7 +12,8 @@ CONFIG -= app_bundle
 
 SOURCES += \
         main.cpp \
-        radar_v2.cpp
+        radar_v2.cpp \
+        time_measure.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -20,4 +21,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    radar_v2.h
+    radar_v2.h \
+    time_measure.h
