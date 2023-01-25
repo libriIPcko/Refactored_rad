@@ -1,0 +1,5 @@
+DS18B20_Qt/dialog.cpp
+DS18B20_Qt/dialog.h
+DS18B20_Qt/main.cpp
+DS18B20_arduino/DS18B20.ino
+README.md
