@@ -54,6 +54,21 @@ int radar_v2::sendCMD(QString data){
     }
 }
 
+bool radar_v2::init_AWR1843(QString cfgFile_path){
+    baudrate_CMD_port = baudrate_CMD_port_AWR1843;
+    baudrate_DATA_port = baudrate_DATA_port_AWR1843;
+    COMport_name_CMD = COMport_name_CMD_AWR1843;
+    COMport_name_DATA = COMport_name_DATA_AWR1843;
+    init(cfgFile_path);
+}
+bool radar_v2::init_AWR2243(QString cfgFile_path){
+    baudrate_CMD_port = baudrate_CMD_port_AWR2243;
+    baudrate_DATA_port = baudrate_DATA_port_AWR2243;
+    COMport_name_CMD = COMport_name_CMD_AWR2243;
+    COMport_name_DATA = COMport_name_DATA_AWR2243;
+    init(cfgFile_path);
+}
+
 bool radar_v2::init(QString cfgFile_path){
     /*if(portConnect("CMD",COMport_name_CMD,baudrate_CMD_port) == false && portConnect("DATA",COMport_name_DATA,baudrate_DATA_port) == false){
         return false;
@@ -64,7 +79,6 @@ bool radar_v2::init(QString cfgFile_path){
     if(status_CMD == false || status_DATA == false){
         return false;
     }
-
     if(readConfigFile(cfgFile_path) == false){
         return false;
     }
@@ -189,7 +203,7 @@ void radar_v2::on_DATA_receive(){
         qDebug() << "time between packets" << a1.wallTime_out(2) << a1.wallTime_unit;
         packets.push_back(buffer_DATA_port);
 
-        QFile testFile("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/New folder/debugDataFile.txt");
+        QFile testFile("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/ReceivedData/debugDataFile.txt");
         testFile.open(QIODevice::WriteOnly |QIODevice::Text);
         QTextStream txt(&testFile);
         txt << buffer_DATA_port;

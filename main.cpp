@@ -1,4 +1,5 @@
 #include <QCoreApplication>
+#include <cfgFiles.h>
 #include <radar_v2.h>
 #include <time_measure.h>
 
@@ -6,7 +7,8 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
     radar_v2 rad;
-    rad.init(rad.cfgFile_path);
+    //rad.init(rad.cfgFile_path);
+    rad.init_AWR2243(cfg_default_AWR2243);
 
     /*
     time_measure a1;

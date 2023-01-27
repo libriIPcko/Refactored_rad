@@ -19,11 +19,19 @@ class radar_v2 : public QObject
 public:
     radar_v2();
     bool init(QString cfgFile_path);
+    bool init_AWR1843(QString cfgFile_path);
+    bool init_AWR2243(QString cfgFile_path);
+
     QString cfgFile_path = "C:/Users/RPlsicik/Documents/GitHub/RVC/tst/untitled4/xwr18xx_profile_2022_05_30T13_05_06_607.txt";
 
     //Debug atributes:
     time_measure a1;
     QString data;
+
+    int baudrate_CMD_port;
+    int baudrate_DATA_port;
+    QString COMport_name_CMD;
+    QString COMport_name_DATA;
 
 private:
     QSerialPort *CMD_port = new QSerialPort;
@@ -32,10 +40,19 @@ private:
     //Port Connect
     //@type = CMD or type = DATA
     bool portConnect(QString type,QString name_COM, int baudrate);
-    int baudrate_CMD_port = 115200;
-    int baudrate_DATA_port = 921600;
-    QString COMport_name_CMD = "COM3";
-    QString COMport_name_DATA = "COM4";
+
+    QString COMport_name_CMD_AWR1843 = "COM3";
+    QString COMport_name_DATA_AWR1843 = "COM4";
+    int baudrate_CMD_port_AWR1843 = 115200;
+    int baudrate_DATA_port_AWR1843 = 921600;
+        //QString COMport_name_CMD_AWR2243 = "COM11";
+        //QString COMport_name_DATA_AWR2243 = "COM17";
+    QString COMport_name_CMD_AWR2243 = "COM3";
+    QString COMport_name_DATA_AWR2243 = "COM4";
+    int baudrate_CMD_port_AWR2243 = 115200;
+    int baudrate_DATA_port_AWR2243 = 892857;
+
+
 
     //Initialization
     bool readConfigFile(QString path);

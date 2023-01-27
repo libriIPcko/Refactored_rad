@@ -21,5 +21,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    cfgFiles.h \
     radar_v2.h \
     time_measure.h
+
+
