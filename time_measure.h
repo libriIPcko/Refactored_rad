@@ -23,7 +23,6 @@ public:
 
 
 private:
-
     std::chrono::high_resolution_clock::time_point wallTime_begin;
     std::chrono::high_resolution_clock::time_point wallTime_end;
     double wallTime_elapsed;
@@ -31,7 +30,6 @@ private:
     double cpuTime_start_var;
     double cpuTime_end_var;
     double cpuTime_elapsedTime;
-
 };
 
 #endif // TIME_MEASURE_H
