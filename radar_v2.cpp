@@ -227,9 +227,19 @@ void radar_v2::on_DATA_receive(){
 //File read and parse
 //QByteArray buffer_DATA_port = "";
 //std::deque<QByteArray> packets;
-
+//Output from function is packed
 void radar_v2::parse_offline_data(QString path){
     readFromFile(path);
+    savePackedData("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/ReceivedData/ParsedData/saved_PackedData.txt");
+    int i = 0;
+    int length = packedData.size();
+    while(i < length){
+        parseData(packedData.front());
+        packedData.pop_front();
+        if(i = length-40){
+            qDebug() << "Here";
+        }
+    }
 }
 
 void radar_v2::readFromFile(QString path){
@@ -247,24 +257,41 @@ void radar_v2::readFromFile(QString path){
         QByteArray sync = QByteArray::fromHex("0201040306050807");
         QByteArray file_output = file.readAll();
         QString temp(file_output.toHex());
+        QFile out("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/ReceivedData/tst.txt");
+        QTextStream out_stream(&out);
+        out.open(QIODevice::WriteOnly);
+        out_stream << file_output.toHex();
 
     //Finding sync
-        std::vector<int> posOfPacket;
+        std::deque<int> posOfPacket;
         int it = 0;
-        while(it < temp.size()) {
+        int length = temp.size();
+        while(it < length) {
             posOfPacket.push_back(temp.indexOf("0201040306050807",it));
             it = posOfPacket.back() + 1 ;
+            if(it == -1 || it == 0){
+                break;
+            }
         }
     //Filling packet;
         QString hexVal;
-        int i = posOfPacket.at(0);
+        int i = posOfPacket.front();
+        posOfPacket.pop_front();
         while(i<temp.length()){
-            if(i < posOfPacket.at(1)){
-                hexVal.append(temp.at(posOfPacket.at(i)));
+            if(i == 48){
+                qDebug() << "Here";
+            }
+            if(i < posOfPacket.front()){
+                hexVal.append(temp.at(i));
             }
             else{
-                packed.push_back(hexVal);
+                packedData.push_back(hexVal);
                 hexVal.clear();
+                posOfPacket.pop_front();
+            }
+            i++;
+            if(posOfPacket.front() == NULL || posOfPacket.front() == -1){
+                break;
             }
         }
 
@@ -273,11 +300,264 @@ void radar_v2::readFromFile(QString path){
     else{
         //error
     }
-
-
 }
-void radar_v2::parseData(){
 
+
+void radar_v2::savePackedData(QString path){
+    QFile outFile(path);
+    QTextStream outFile_stream(&outFile);
+    outFile.open(QIODevice::WriteOnly);
+    for(int it=0;it < packedData.size(); it++){
+        outFile_stream << it << " - " << packedData.at(it) << "\n";
+    }
+}
+
+
+void radar_v2::parseData(QString data){
+    int n = 0;
+    int bO = 2;
+    int length = data.length();
+    int vect_iterator = 0;
+    QFile outFile("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/ReceivedData/ParsedData/outFile_sortedData.txt");
+    QTextStream out(&outFile);
+    outFile.open(QIODevice::WriteOnly);
+
+    while(n<data.length()){
+    //FrameHeaderStructType     defaultPosition
+        //sync
+        if(n < 8*bO){
+            //pos = n;
+            if(n==0){
+                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "sync: \t\t\t\t";
+            }
+            out << data.toUtf8().at(n);
+            //qDebug() << data.toUtf8().at(n);
+            outData.fHST.sync.append(data.toUtf8().at(n));
+        }
+        //version
+        else if(n < (12*bO)){
+            //if(n==9){ofset=9;pos=n-ofset;}
+            //QTextStream out(&outFile);
+            if(n==8*bO){
+                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "version: \t\t\t";
+            }
+            out << data.toUtf8().at(n);
+            //qDebug() << data.toUtf8().at(n);
+            outData.fHST.version.append(data.toUtf8().at(n));
+        }
+        //platform
+        else if(n < (16*bO)){
+            //QTextStream out(&outFile);
+            if(n==12*bO){
+                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "platform: \t\t\t";
+            }
+            out << data.toUtf8().at(n);
+            //qDebug() << data.toUtf8().at(n);
+            outData.fHST.platform.append(data.toUtf8().at(n));
+        }
+        //timestamp
+        else if(n < 20*bO){
+            //QTextStream out(&outFile);
+            if(n==16*bO){
+                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "timestamp: \t\t";
+            }
+            out << data.toUtf8().at(n);
+            //qDebug() << data.toUtf8().at(n);
+            outData.fHST.timestamp.append(data.toUtf8().at(n));
+        }
+        //packetLength
+        else if(n < 24*bO){
+            //QTextStream out(&outFile);
+            if(n==20*bO){
+                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "packetLength: \t\t";
+            }
+            out << data.toUtf8().at(n);
+            //qDebug() << data.toUtf8().at(n);
+            outData.fHST.packetLength.append(data.toUtf8().at(n));
+        }
+        //frameNumber
+        else if(n < 28*bO){
+            //QTextStream out(&outFile);
+            if(n==24*bO){
+                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "frameNumber: \t\t";
+            }
+            out << data.toUtf8().at(n);
+            //qDebug() << data.toUtf8().at(n);
+            outData.fHST.frameNumber.append(data.toUtf8().at(n));
+        }
+        //subframeNumber
+        else if(n < 32*bO){
+            //QTextStream out(&outFile);
+            if(n==28*bO){
+                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "subframeNumber: \t";
+            }
+            out << data.toUtf8().at(n);
+            //qDebug() << data.toUtf8().at(n);
+            outData.fHST.subframeNumber.append(data.toUtf8().at(n));
+        }
+        //chirpMargin
+        else if(n < 36*bO){
+            //QTextStream out(&outFile);
+            if(n==32*bO){
+                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "chirpMargin: \t\t";
+            }
+            out << data.toUtf8().at(n);
+            //qDebug() << data.toUtf8().at(n);
+            outData.fHST.chirpMargin.append(data.toUtf8().at(n));
+        }
+        //frameMargin
+        else if(n < 40*bO){
+            //QTextStream out(&outFile);
+            if(n==36*bO){
+                out << "\n"<< QString::number(TLV_packets.size()) << "/" <<  QString::number(n) << " " << "frameMargin: \t\t";
+            }
+            out << data.toUtf8().at(n);
+            //qDebug() << data.toUtf8().at(n);
+            outData.fHST.frameMargin.append(data.toUtf8().at(n));
+        }
+        //uartSendTime
+        else if(n < 44*bO){
+            //QTextStream out(&outFile);
+            if(n==40*bO){
+                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " " << "uartSendTime: \t\t";
+            }
+            out << data.toUtf8().at(n);
+            //qDebug() << data.toUtf8().at(n);
+            outData.fHST.uartSendTime.append(data.toUtf8().at(n));
+        }
+        //trackProcessTime
+        else if(n < 48*bO){
+            //QTextStream out(&outFile);
+            if(n==44*bO){
+                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " " << "trackProcessTime: \t";
+            }
+            out << data.toUtf8().at(n);
+            //qDebug() << data.toUtf8().at(n);
+            outData.fHST.trackProcessTime.append(data.toUtf8().at(n));
+        }
+
+        // !!! //numTLVs
+
+        else if(n < 52*bO){
+            //QTextStream out(&outFile);
+            if(n==48*bO){
+                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " " << "numTLVs: \t\t\t";
+            }
+            out << data.toUtf8().at(n);
+            //qDebug() << data.toUtf8().at(n);
+            outData.fHST.numTLVs.append(data.toUtf8().at(n));
+        }
+
+
+        /*
+        //checksum
+        else if((n < 52*bO) && (n < 56*bO)){
+            //QTextStream out(&outFile);
+            if(n==52*bO){
+                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " " << "checksum: \t\t";
+            }
+            out << data.toUtf8().at(n);
+            qDebug() << data.toUtf8().at(n);
+            outData.fHST.checksum.append(data.toUtf8().at(n));
+        }
+        */
+        //TLV_Header OR Point Cloud OR TargetObject dependent on type
+        //else if((n > 56*bO)&&(n<=length)){
+        else if((n<=length)){
+            //if(n==52*bO){
+            if(n<=length-25){
+                //out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " " << "Other: \t\t\n";
+                //TLV Header 4+4 = 8
+                    int i = 0;
+                    outData.tlvHeader_vect.resize(vect_iterator+1);
+                    outData.pointCloud_vect.resize(vect_iterator+1);
+                    while(i<4){
+                        outData.tlvHeader_vect[vect_iterator].type.append(data.toUtf8().at(n));
+                        i++;
+                        n++;
+                    }
+                        out << "\n type:" << outData.tlvHeader_vect[vect_iterator].type;
+                    while(i>=4 && i<8){
+                        outData.tlvHeader_vect[vect_iterator].length.append(data.toUtf8().at(n));
+                        i++;
+                        n++;
+                    }
+                        out << "\n length:" << outData.tlvHeader_vect[vect_iterator].length;
+                    //PointCloud
+                    if(outData.tlvHeader_vect[vect_iterator].type.compare("0600") == 0){
+                        //Point Cloud 4+4+4+4 = 16
+                            while(i>=8 && i<24){
+                                if(i>=8 && i<12){    //range, in m
+                                    outData.point_cloud.range.append(data.toUtf8().at(n));
+                                }
+                                else if(i>=12 && i<16){    //azimuth, in rad
+                                    outData.point_cloud.azimuth.append(data.toUtf8().at(n));
+                                }
+                                else if(i>=16 && i<20){    //Doppler, in m/s
+                                    outData.point_cloud.doppler.append(data.toUtf8().at(n));
+                                }
+                                else if(i>=20 && i<24){    //SNR, ratio
+                                    outData.point_cloud.snr.append(data.toUtf8().at(n));
+                                }
+                                i++;
+                                n++;
+                            }
+                            //outData.pointCloud_vect.insert(outData.point_cloud.range)->range;
+                            outData.pointCloud_vect.resize(vect_iterator+1);
+
+                            outData.pointCloud_vect[vect_iterator].range = outData.point_cloud.range;
+                            outData.pointCloud_vect[vect_iterator].azimuth = outData.point_cloud.azimuth;
+                            outData.pointCloud_vect[vect_iterator].doppler = outData.point_cloud.doppler;
+                            outData.pointCloud_vect[vect_iterator].snr = outData.point_cloud.snr;
+
+                            out << "\n range: " << outData.pointCloud_vect[vect_iterator].range;
+                            out << "\n azimuth: " << outData.pointCloud_vect[vect_iterator].azimuth;
+                            out << "\n doppler: " << outData.pointCloud_vect[vect_iterator].doppler;
+                            out << "\n snr: " << outData.pointCloud_vect[vect_iterator].snr;
+                    }
+
+                    //Target Object List
+                    else if(outData.tlvHeader_vect[vect_iterator].type.compare("0700") == 0){
+                        //Target Object 4+4+4+4+4+4+4+9*4+4 = 36
+                            while(i > 16  && i<=36){
+                                out << " \nTargetObjectList: \t" << data.toUtf8().at(n);
+                                i++;
+                                n++;
+                            }
+                    }
+                    //Target index
+                    else if(outData.tlvHeader_vect[vect_iterator].type.compare("0800") == 0){
+                        //Target Object list 1 byte
+                            while(i > 36){
+                                out << " \nTargetObjectList: \t" << data.toUtf8().at(n);
+                                i++;
+                                n++;
+                            }
+                    }
+                    vect_iterator++;
+
+
+                    //The TLV data
+                    /*
+                    else{
+
+                    }
+                    */
+                //out << "\n"<< "Other: \t\t\n";
+            }
+            out <<"\n other:" <<  data.toUtf8().at(n);
+            //qDebug() << n <<"/"<<length << ":" << data.toUtf8().at(n);
+        }
+
+        else{
+            break;
+        }
+        n++;
+
+    }
+
+    TLV_packets.push_back(outData);
+    outData.clear();
 }
 void radar_v2::saveData_byType(QString path){
 

@@ -1,6 +1,7 @@
 #ifndef RADAR_V2_H
 #define RADAR_V2_H
 #include <time_measure.h>
+#include <tlv_dat.h>
 
 #include <QtSerialPort/QSerialPort>
 #include <QTimer>
@@ -65,9 +66,13 @@ private:
 
     //Parse data
     void readFromFile(QString path);
-    void parseData();
+    void savePackedData(QString path);
+    void parseData(QString data);
     void saveData_byType(QString path);
-    std::deque<QString> packed;
+    TLV_dat outData;
+    //std::vector<QString> TLV_RAW_packets;
+    std::vector<TLV_dat> TLV_packets;
+    std::deque<QString> packedData;
 
     //Data pre-process
     QByteArray buffer_DATA_port = "";
