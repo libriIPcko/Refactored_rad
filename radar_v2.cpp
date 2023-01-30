@@ -221,3 +221,64 @@ void radar_v2::on_DATA_receive(){
     }
 
 }
+
+
+
+//File read and parse
+//QByteArray buffer_DATA_port = "";
+//std::deque<QByteArray> packets;
+
+void radar_v2::parse_offline_data(QString path){
+    readFromFile(path);
+}
+
+void radar_v2::readFromFile(QString path){
+    /*
+    buffer_DATA_port.append(DATA_port->readAll());
+    QString ssync = "0201040306050807";
+    QByteArray sync = QByteArray::fromHex("0201040306050807");
+    //QByteArrayView sync = ssync.toUtf8();
+    int count = buffer_DATA_port.indexOf(sync);
+     */
+
+    QFile file(path);
+    if(file.open(QIODevice::ReadOnly | QIODevice::Text) == true){
+
+        QByteArray sync = QByteArray::fromHex("0201040306050807");
+        QByteArray file_output = file.readAll();
+        QString temp(file_output.toHex());
+
+    //Finding sync
+        std::vector<int> posOfPacket;
+        int it = 0;
+        while(it < temp.size()) {
+            posOfPacket.push_back(temp.indexOf("0201040306050807",it));
+            it = posOfPacket.back() + 1 ;
+        }
+    //Filling packet;
+        QString hexVal;
+        int i = posOfPacket.at(0);
+        while(i<temp.length()){
+            if(i < posOfPacket.at(1)){
+                hexVal.append(temp.at(posOfPacket.at(i)));
+            }
+            else{
+                packed.push_back(hexVal);
+                hexVal.clear();
+            }
+        }
+
+
+    }
+    else{
+        //error
+    }
+
+
+}
+void radar_v2::parseData(){
+
+}
+void radar_v2::saveData_byType(QString path){
+
+}

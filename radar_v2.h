@@ -22,6 +22,8 @@ public:
     bool init_AWR1843(QString cfgFile_path);
     bool init_AWR2243(QString cfgFile_path);
 
+    void parse_offline_data(QString path);
+
     QString cfgFile_path = "C:/Users/RPlsicik/Documents/GitHub/RVC/tst/untitled4/xwr18xx_profile_2022_05_30T13_05_06_607.txt";
 
     //Debug atributes:
@@ -52,8 +54,6 @@ private:
     int baudrate_CMD_port_AWR2243 = 115200;
     int baudrate_DATA_port_AWR2243 = 892857;
 
-
-
     //Initialization
     bool readConfigFile(QString path);
     bool config_dev();
@@ -62,6 +62,12 @@ private:
     QTimer *timer_cfgFile = new QTimer();
     deque<QString> cfgCMD;
     int sendCMD(QString data);
+
+    //Parse data
+    void readFromFile(QString path);
+    void parseData();
+    void saveData_byType(QString path);
+    std::deque<QString> packed;
 
     //Data pre-process
     QByteArray buffer_DATA_port = "";

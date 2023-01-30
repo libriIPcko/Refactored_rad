@@ -13,7 +13,8 @@ CONFIG -= app_bundle
 SOURCES += \
         main.cpp \
         radar_v2.cpp \
-        time_measure.cpp
+        time_measure.cpp \
+        tlv_dat.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -23,6 +24,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     cfgFiles.h \
     radar_v2.h \
-    time_measure.h
+    time_measure.h \
+    tlv_dat.h
 
 
