@@ -18,14 +18,17 @@ class radar_v2 : public QObject
 {
     Q_OBJECT
 public:
+
+    int test(int min, int max){
+       return rand() % (max + 1 - min);
+    }
+
     radar_v2();
     bool init(QString cfgFile_path);
     bool init_AWR1843(QString cfgFile_path);
     bool init_AWR2243(QString cfgFile_path);
 
     void parse_offline_data(QString path, bool asciidata);
-    void parse_offline_data();
-    void readFromFile(QString path);
 
     QString cfgFile_path = "C:/Users/RPlsicik/Documents/GitHub/RVC/tst/untitled4/xwr18xx_profile_2022_05_30T13_05_06_607.txt";
 

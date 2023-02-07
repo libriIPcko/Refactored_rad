@@ -249,22 +249,6 @@ void radar_v2::parse_offline_data(QString path, bool asciidata){
     }
 }
 
-void radar_v2::parse_offline_data(){
-    qDebug() << "OK";
-    readFromFile("C:/ti/XXX_Rad Tools Examples/AWR1843/Industrial/traffic_monitoring/18xx_68xx_traffic_monitoring/Recorded data/tm_demo_uart_stream - Copy.txt");
-    //savePackedData("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/ReceivedData/ParsedData/saved_PackedData.txt");
-    savePackedData("C:/ti/XXX_Rad Tools Examples/AWR1843/Industrial/traffic_monitoring/18xx_68xx_traffic_monitoring/Recorded data/packetizedData.txt");
-    int i = 0;
-    int length = packedData.size();
-    while(i < length){
-        parseData(packedData.front());
-        packedData.pop_front();
-        if(i == length-40){
-            qDebug() << "Here";
-        }
-    }
-}
-
 void radar_v2::readFromFile(QString path,bool asciidata){
     /*
     buffer_DATA_port.append(DATA_port->readAll());
@@ -653,69 +637,4 @@ void radar_v2::parseData(QString data){
 }
 void radar_v2::saveData_byType(QString path){
     QString warningClear = path;
-}
-
-
-
-
-void radar_v2::readFromFile(QString path){
-    /*
-    buffer_DATA_port.append(DATA_port->readAll());
-    QString ssync = "0201040306050807";
-    QByteArray sync = QByteArray::fromHex("0201040306050807");
-    //QByteArrayView sync = ssync.toUtf8();
-    int count = buffer_DATA_port.indexOf(sync);
-     */
-
-    QFile file(path);
-    if(file.open(QIODevice::ReadOnly | QIODevice::Text) == true){
-
-        QByteArray sync = QByteArray::fromHex("0201040306050807");
-        QByteArray file_output = file.readAll();
-        QString temp;
-        temp = file_output.toHex();
-
-        QFile out("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/ReceivedData/tst.txt");
-        QTextStream out_stream(&out);
-        out.open(QIODevice::WriteOnly);
-        out_stream << file_output.toHex();
-
-    //Finding sync
-        std::deque<int> posOfPacket;
-        int it = 0;
-        int length = temp.size();
-        while(it < length) {
-            posOfPacket.push_back(temp.indexOf("0201040306050807",it));
-            it = posOfPacket.back();// + 1 ;
-            //if(it == -1 || it == 0){
-            if(it == -1){
-                break;
-            }
-            it++;
-        }
-    //Filling packet;
-        QString hexVal;
-        int i = posOfPacket.front();
-        posOfPacket.pop_front();
-        while(i<temp.length()){
-            if(i < posOfPacket.front()-1){
-                hexVal.append(temp.at(i));
-            }
-            else{
-                //hexVal.append(temp.at(i));
-                packedData.push_back(hexVal);
-                hexVal.clear();
-                posOfPacket.pop_front();
-            }
-            i++;
-            if(posOfPacket.front() == NULL || posOfPacket.front() == -1){
-                break;
-            }
-        }
-
-
-    }
-    else{
-        //error
-    }
 }
