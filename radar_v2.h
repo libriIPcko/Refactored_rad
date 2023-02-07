@@ -23,7 +23,9 @@ public:
     bool init_AWR1843(QString cfgFile_path);
     bool init_AWR2243(QString cfgFile_path);
 
-    void parse_offline_data(QString path);
+    void parse_offline_data(QString path, bool asciidata);
+    void parse_offline_data();
+    void readFromFile(QString path);
 
     QString cfgFile_path = "C:/Users/RPlsicik/Documents/GitHub/RVC/tst/untitled4/xwr18xx_profile_2022_05_30T13_05_06_607.txt";
 
@@ -65,13 +67,16 @@ private:
     int sendCMD(QString data);
 
     //Parse data
-    void readFromFile(QString path);
+    //void readFromFile(QString path);
+    void readFromFile(QString path,bool asciidata);
     void savePackedData(QString path);
     void parseData(QString data);
     void saveData_byType(QString path);
     TLV_dat outData;
-    //std::vector<QString> TLV_RAW_packets;
-    std::vector<TLV_dat> TLV_packets;
+
+    std::vector<QString> TLV_RAW_packets;
+    std::vector<TLV_dat> TLV_packets;     //Wrong architecture approach
+
     std::deque<QString> packedData;
 
     //Data pre-process

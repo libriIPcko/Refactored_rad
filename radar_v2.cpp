@@ -59,14 +59,14 @@ bool radar_v2::init_AWR1843(QString cfgFile_path){
     baudrate_DATA_port = baudrate_DATA_port_AWR1843;
     COMport_name_CMD = COMport_name_CMD_AWR1843;
     COMport_name_DATA = COMport_name_DATA_AWR1843;
-    init(cfgFile_path);
+    return init(cfgFile_path);
 }
 bool radar_v2::init_AWR2243(QString cfgFile_path){
     baudrate_CMD_port = baudrate_CMD_port_AWR2243;
     baudrate_DATA_port = baudrate_DATA_port_AWR2243;
     COMport_name_CMD = COMport_name_CMD_AWR2243;
     COMport_name_DATA = COMport_name_DATA_AWR2243;
-    init(cfgFile_path);
+    return init(cfgFile_path);
 }
 
 bool radar_v2::init(QString cfgFile_path){
@@ -139,7 +139,15 @@ bool radar_v2::config_dev(){
 
 bool radar_v2::stop(){
     connect(CMD_port,SIGNAL(readyRead()),this,SLOT(on_CMD_receive()));
-    sendCMD("sensorStop\r");
+    int returnStatement = sendCMD("sensorStop\r");
+    if(returnStatement == 0){
+        //ok
+        return true;
+    }
+    else{
+        //false of stop
+        return false;
+    }
 
 }
 
@@ -211,14 +219,12 @@ void radar_v2::on_DATA_receive(){
         buffer_DATA_port.clear();
 
         if(packets.size() % 10 == 0){
-            for(int i=0;i < packets.size();i++){
+            for(int i=0;i <(int) packets.size();i++){
                 txt << packets.at(i);
             }
         }
-
         a1.wallTime_start();
     }
-
 }
 
 
@@ -227,9 +233,11 @@ void radar_v2::on_DATA_receive(){
 //QByteArray buffer_DATA_port = "";
 //std::deque<QByteArray> packets;
 //Output from function is packed
-void radar_v2::parse_offline_data(QString path){
-    readFromFile(path);
+void radar_v2::parse_offline_data(QString path, bool asciidata){
+    qDebug() << "OK";
+    readFromFile(path,asciidata);
     //savePackedData("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/ReceivedData/ParsedData/saved_PackedData.txt");
+    savePackedData("C:/ti/XXX_Rad Tools Examples/AWR1843/Industrial/traffic_monitoring/18xx_68xx_traffic_monitoring/Recorded data/packetizedData.txt");
     int i = 0;
     int length = packedData.size();
     while(i < length){
@@ -241,7 +249,23 @@ void radar_v2::parse_offline_data(QString path){
     }
 }
 
-void radar_v2::readFromFile(QString path){
+void radar_v2::parse_offline_data(){
+    qDebug() << "OK";
+    readFromFile("C:/ti/XXX_Rad Tools Examples/AWR1843/Industrial/traffic_monitoring/18xx_68xx_traffic_monitoring/Recorded data/tm_demo_uart_stream - Copy.txt");
+    //savePackedData("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/ReceivedData/ParsedData/saved_PackedData.txt");
+    savePackedData("C:/ti/XXX_Rad Tools Examples/AWR1843/Industrial/traffic_monitoring/18xx_68xx_traffic_monitoring/Recorded data/packetizedData.txt");
+    int i = 0;
+    int length = packedData.size();
+    while(i < length){
+        parseData(packedData.front());
+        packedData.pop_front();
+        if(i == length-40){
+            qDebug() << "Here";
+        }
+    }
+}
+
+void radar_v2::readFromFile(QString path,bool asciidata){
     /*
     buffer_DATA_port.append(DATA_port->readAll());
     QString ssync = "0201040306050807";
@@ -255,7 +279,15 @@ void radar_v2::readFromFile(QString path){
 
         QByteArray sync = QByteArray::fromHex("0201040306050807");
         QByteArray file_output = file.readAll();
-        QString temp(file_output.toHex());
+        QString temp;
+        if(asciidata == true){
+            //QString temp(file_output);
+            temp = file_output;
+        }
+        else{
+            //QString temp(file_output.toHex());
+            temp = file_output.toHex();
+        }
         QFile out("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/ReceivedData/tst.txt");
         QTextStream out_stream(&out);
         out.open(QIODevice::WriteOnly);
@@ -268,23 +300,22 @@ void radar_v2::readFromFile(QString path){
         while(it < length) {
             posOfPacket.push_back(temp.indexOf("0201040306050807",it));
             it = posOfPacket.back();// + 1 ;
-            if(it == -1 || it == 0){
+            //if(it == -1 || it == 0){
+            if(it == -1){
                 break;
             }
+            it++;
         }
     //Filling packet;
         QString hexVal;
         int i = posOfPacket.front();
         posOfPacket.pop_front();
         while(i<temp.length()){
-
-            if(packedData.size() == 2){
-                qDebug() << "Here";
-            }
-            if(i < posOfPacket.front()){
+            if(i < posOfPacket.front()-1){
                 hexVal.append(temp.at(i));
             }
             else{
+                //hexVal.append(temp.at(i));
                 packedData.push_back(hexVal);
                 hexVal.clear();
                 posOfPacket.pop_front();
@@ -307,7 +338,7 @@ void radar_v2::savePackedData(QString path){
     QFile outFile(path);
     QTextStream outFile_stream(&outFile);
     outFile.open(QIODevice::WriteOnly);
-    for(int it=0;it < packedData.size(); it++){
+    for(int it=0;it <(int) packedData.size(); it++){
         outFile_stream << it << " - " << packedData.at(it) << "\n";
     }
 }
@@ -318,10 +349,15 @@ void radar_v2::parseData(QString data){
     int bO = 2; //because one hex data is represented by two char
     int length = data.length();
 
+        //Wrong Approach
+    //outData.vect_iterator = 0;
+    //outData.packets_iterator = 0;
+
 
     QFile outFile("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/ReceivedData/ParsedData/outFile_sortedData.txt");
-    QTextStream out(&outFile);
     outFile.open(QIODevice::WriteOnly);
+    QTextStream out(&outFile);
+
     outData.packets.resize(outData.packets_iterator+1);
     while(n<data.length()){
     //FrameHeaderStructType     defaultPosition
@@ -333,7 +369,8 @@ void radar_v2::parseData(QString data){
         if(n < 8*bO){
             //pos = n;
             if(n==0){
-                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "sync: \t\t\t\t";
+                //out << "\n"<< QString::number(outData.packets[outData.packets_iterator].size()) << "/" << QString::number(n)  << " "<< "sync: \t\t\t\t";
+                out << "\n"<<"sync: \t\t\t\t";
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
@@ -346,7 +383,8 @@ void radar_v2::parseData(QString data){
             //if(n==9){ofset=9;pos=n-ofset;}
             //QTextStream out(&outFile);
             if(n==8*bO){
-                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "version: \t\t\t";
+                //out << "\n"<< QString::number(outData.packets[outData.packets_iterator].size()) << "/" << QString::number(n)  << " "<< "version: \t\t\t";
+                out << "\n"<<"version: \t\t\t";
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
@@ -357,7 +395,8 @@ void radar_v2::parseData(QString data){
         else if(n < (16*bO)){
             //QTextStream out(&outFile);
             if(n==12*bO){
-                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "platform: \t\t\t";
+                //out << "\n"<< QString::number(outData.packets[outData.packets_iterator].size()) << "/" << QString::number(n)  << " "<< "platform: \t\t\t";
+                out << "\n"<<"platform: \t\t\t";
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
@@ -368,7 +407,8 @@ void radar_v2::parseData(QString data){
         else if(n < 20*bO){
             //QTextStream out(&outFile);
             if(n==16*bO){
-                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "timestamp: \t\t";
+                //out << "\n"<< QString::number(outData.packets[outData.packets_iterator].size()) << "/" << QString::number(n)  << " "<< "timestamp: \t\t";
+                out << "\n"<<"timestamp: \t\t";
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
@@ -379,7 +419,8 @@ void radar_v2::parseData(QString data){
         else if(n < 24*bO){
             //QTextStream out(&outFile);
             if(n==20*bO){
-                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "packetLength: \t\t";
+                //out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "packetLength: \t\t";
+                out << "\n"<<"packetLength: \t\t";
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
@@ -390,7 +431,8 @@ void radar_v2::parseData(QString data){
         else if(n < 28*bO){
             //QTextStream out(&outFile);
             if(n==24*bO){
-                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "frameNumber: \t\t";
+                //out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "frameNumber: \t\t";
+                out << "\n"<<"frameNumber: \t\t";
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
@@ -401,7 +443,8 @@ void radar_v2::parseData(QString data){
         else if(n < 32*bO){
             //QTextStream out(&outFile);
             if(n==28*bO){
-                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "subframeNumber: \t";
+                //out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "subframeNumber: \t";
+                out << "subframeNumber: \t";
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
@@ -413,7 +456,8 @@ void radar_v2::parseData(QString data){
         else if(n < 36*bO){
             //QTextStream out(&outFile);
             if(n==32*bO){
-                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "chirpMargin: \t\t";
+                //out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " "<< "chirpMargin: \t\t";
+                out << "\n"<<"chirpMargin: \t\t";
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
@@ -424,7 +468,8 @@ void radar_v2::parseData(QString data){
         else if(n < 40*bO){
             //QTextStream out(&outFile);
             if(n==36*bO){
-                out << "\n"<< QString::number(TLV_packets.size()) << "/" <<  QString::number(n) << " " << "frameMargin: \t\t";
+                //out << "\n"<< QString::number(TLV_packets.size()) << "/" <<  QString::number(n) << " " << "frameMargin: \t\t";
+                out << "\n"<<"frameMargin: \t\t";
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
@@ -435,7 +480,8 @@ void radar_v2::parseData(QString data){
         else if(n < 44*bO){
             //QTextStream out(&outFile);
             if(n==40*bO){
-                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " " << "uartSendTime: \t\t";
+                //out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " " << "uartSendTime: \t\t";
+                out << "\n"<<"uartSendTime: \t\t";
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
@@ -446,7 +492,8 @@ void radar_v2::parseData(QString data){
         else if(n < 48*bO){ //orig val n < 48*bO
             //QTextStream out(&outFile);
             if(n==44*bO){
-                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " " << "trackProcessTime: \t";
+                //out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " " << "trackProcessTime: \t";
+                out << "\n"<<"trackProcessTime: \t";
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
@@ -458,7 +505,8 @@ void radar_v2::parseData(QString data){
         else if(n < 52*bO){
             //QTextStream out(&outFile);
             if(n==48*bO){
-                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " " << "numTLVs: \t\t\t";
+                //out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " " << "numTLVs: \t\t\t";
+                out << "\n"<<"numTLVs: \t\t\t";
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
@@ -470,7 +518,8 @@ void radar_v2::parseData(QString data){
         else if((n > 51*bO) && (n < 54*bO)){
             //QTextStream out(&outFile);
             if(n==52*bO){
-                out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " " << "checksum: \t\t";
+                //out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " " << "checksum: \t\t";
+                out << "\n"<<"checksum: \t\t";
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
@@ -598,9 +647,75 @@ void radar_v2::parseData(QString data){
 
     outData.vect_iterator++;    //added for incrementation of vector
     outData.packets_iterator++;
-    TLV_packets.push_back(outData);
+
+    //TLV_packets.push_back(outData); //old one
     outData.clear();
 }
 void radar_v2::saveData_byType(QString path){
+    QString warningClear = path;
+}
 
+
+
+
+void radar_v2::readFromFile(QString path){
+    /*
+    buffer_DATA_port.append(DATA_port->readAll());
+    QString ssync = "0201040306050807";
+    QByteArray sync = QByteArray::fromHex("0201040306050807");
+    //QByteArrayView sync = ssync.toUtf8();
+    int count = buffer_DATA_port.indexOf(sync);
+     */
+
+    QFile file(path);
+    if(file.open(QIODevice::ReadOnly | QIODevice::Text) == true){
+
+        QByteArray sync = QByteArray::fromHex("0201040306050807");
+        QByteArray file_output = file.readAll();
+        QString temp;
+        temp = file_output.toHex();
+
+        QFile out("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/ReceivedData/tst.txt");
+        QTextStream out_stream(&out);
+        out.open(QIODevice::WriteOnly);
+        out_stream << file_output.toHex();
+
+    //Finding sync
+        std::deque<int> posOfPacket;
+        int it = 0;
+        int length = temp.size();
+        while(it < length) {
+            posOfPacket.push_back(temp.indexOf("0201040306050807",it));
+            it = posOfPacket.back();// + 1 ;
+            //if(it == -1 || it == 0){
+            if(it == -1){
+                break;
+            }
+            it++;
+        }
+    //Filling packet;
+        QString hexVal;
+        int i = posOfPacket.front();
+        posOfPacket.pop_front();
+        while(i<temp.length()){
+            if(i < posOfPacket.front()-1){
+                hexVal.append(temp.at(i));
+            }
+            else{
+                //hexVal.append(temp.at(i));
+                packedData.push_back(hexVal);
+                hexVal.clear();
+                posOfPacket.pop_front();
+            }
+            i++;
+            if(posOfPacket.front() == NULL || posOfPacket.front() == -1){
+                break;
+            }
+        }
+
+
+    }
+    else{
+        //error
+    }
 }
