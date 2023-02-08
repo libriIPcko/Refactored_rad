@@ -8,6 +8,7 @@ TLV_dat::~TLV_dat(){
 }
 
 void TLV_dat::clear(){
+/*
     fHST.sync =  0;                //1B     //syncPattern in hex is: '02 01 04 03 06 05 08 07'
     fHST.version =  0;             //8B     //0xA1642 or 0xA1443
     fHST.platform =  0;            //12B    //See description below
@@ -41,4 +42,5 @@ void TLV_dat::clear(){
     target_object.G= 0;                   //144B   //Gating function gain
 
     target_index.id= 0;                    //148B   //track ID
+*/
 }

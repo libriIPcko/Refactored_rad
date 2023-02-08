@@ -219,12 +219,7 @@ void radar_v2::on_DATA_receive(){
         buffer_DATA_port.clear();
 
         if(packets.size() % 10 == 0){
-<<<<<<< HEAD
             for(int i=0;i <(int) packets.size();i++){
-=======
-
-            for(int i=0;i < packets.size();i++){
->>>>>>> parent of fc72481 (Change structure of TLV & modification in radar_v2)
                 txt << packets.at(i);
             }
         }
@@ -238,23 +233,17 @@ void radar_v2::on_DATA_receive(){
 //QByteArray buffer_DATA_port = "";
 //std::deque<QByteArray> packets;
 //Output from function is packed
-<<<<<<< HEAD
 void radar_v2::parse_offline_data(QString path, bool asciidata){
     qDebug() << "OK";
     readFromFile(path,asciidata);
     //savePackedData("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/ReceivedData/ParsedData/saved_PackedData.txt");
     savePackedData("C:/ti/XXX_Rad Tools Examples/AWR1843/Industrial/traffic_monitoring/18xx_68xx_traffic_monitoring/Recorded data/packetizedData.txt");
-=======
-void radar_v2::parse_offline_data(QString path){
-    readFromFile(path);
-    savePackedData("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/ReceivedData/ParsedData/saved_PackedData.txt");
->>>>>>> parent of fc72481 (Change structure of TLV & modification in radar_v2)
     int i = 0;
     int length = packedData.size();
     while(i < length){
         parseData(packedData.front());
         packedData.pop_front();
-        if(i = length-40){
+        if(i == length-40){
             qDebug() << "Here";
         }
     }
@@ -294,14 +283,9 @@ void radar_v2::readFromFile(QString path,bool asciidata){
         int length = temp.size();
         while(it < length) {
             posOfPacket.push_back(temp.indexOf("0201040306050807",it));
-<<<<<<< HEAD
             it = posOfPacket.back();// + 1 ;
             //if(it == -1 || it == 0){
             if(it == -1){
-=======
-            it = posOfPacket.back() + 1 ;
-            if(it == -1 || it == 0){
->>>>>>> parent of fc72481 (Change structure of TLV & modification in radar_v2)
                 break;
             }
             it++;
@@ -311,14 +295,7 @@ void radar_v2::readFromFile(QString path,bool asciidata){
         int i = posOfPacket.front();
         posOfPacket.pop_front();
         while(i<temp.length()){
-<<<<<<< HEAD
             if(i < posOfPacket.front()-1){
-=======
-            if(i == 48){
-                qDebug() << "Here";
-            }
-            if(i < posOfPacket.front()){
->>>>>>> parent of fc72481 (Change structure of TLV & modification in radar_v2)
                 hexVal.append(temp.at(i));
             }
             else{
@@ -353,29 +330,25 @@ void radar_v2::savePackedData(QString path){
 
 void radar_v2::parseData(QString data){
     int n = 0;
-    int bO = 2;
+    int bO = 2; //because one hex data is represented by two char
     int length = data.length();
-<<<<<<< HEAD
 
         //Wrong Approach
     //outData.vect_iterator = 0;
     //outData.packets_iterator = 0;
 
 
-=======
-    int vect_iterator = 0;
->>>>>>> parent of fc72481 (Change structure of TLV & modification in radar_v2)
     QFile outFile("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/ReceivedData/ParsedData/outFile_sortedData.txt");
     outFile.open(QIODevice::WriteOnly);
-<<<<<<< HEAD
     QTextStream out(&outFile);
 
     outData.packets.resize(outData.packets_iterator+1);
-=======
-
->>>>>>> parent of fc72481 (Change structure of TLV & modification in radar_v2)
     while(n<data.length()){
     //FrameHeaderStructType     defaultPosition
+        //outData.frameHeaderStructType_vect.resize(vect_iterator+1);
+        if(n== length-500){
+            qDebug() << "Here";
+        }
         //sync
         if(n < 8*bO){
             //pos = n;
@@ -385,7 +358,9 @@ void radar_v2::parseData(QString data){
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
-            outData.fHST.sync.append(data.toUtf8().at(n));
+            //outData.fHST.sync.append(data.toUtf8().at(n));
+            //outData.frameHeaderStructType_vect[vect_iterator].sync.append(data.toUtf8().at(n));
+            outData.packets[outData.packets_iterator].packetHeader.sync.append(data.toUtf8().at(n));
         }
         //version
         else if(n < (12*bO)){
@@ -397,7 +372,8 @@ void radar_v2::parseData(QString data){
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
-            outData.fHST.version.append(data.toUtf8().at(n));
+            //outData.frameHeaderStructType_vect[vect_iterator].version.append(data.toUtf8().at(n));
+            outData.packets[outData.packets_iterator].packetHeader.version.append(data.toUtf8().at(n));
         }
         //platform
         else if(n < (16*bO)){
@@ -408,7 +384,8 @@ void radar_v2::parseData(QString data){
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
-            outData.fHST.platform.append(data.toUtf8().at(n));
+            //outData.frameHeaderStructType_vect[vect_iterator].platform.append(data.toUtf8().at(n));
+            outData.packets[outData.packets_iterator].packetHeader.platform.append(data.toUtf8().at(n));
         }
         //timestamp
         else if(n < 20*bO){
@@ -419,7 +396,8 @@ void radar_v2::parseData(QString data){
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
-            outData.fHST.timestamp.append(data.toUtf8().at(n));
+            //outData.frameHeaderStructType_vect[vect_iterator].timestamp.append(data.toUtf8().at(n));
+            outData.packets[outData.packets_iterator].packetHeader.timestamp.append(data.toUtf8().at(n));
         }
         //packetLength
         else if(n < 24*bO){
@@ -430,7 +408,8 @@ void radar_v2::parseData(QString data){
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
-            outData.fHST.packetLength.append(data.toUtf8().at(n));
+            //outData.frameHeaderStructType_vect[vect_iterator].packetLength.append(data.toUtf8().at(n));
+            outData.packets[outData.packets_iterator].packetHeader.packetLength.append(data.toUtf8().at(n));
         }
         //frameNumber
         else if(n < 28*bO){
@@ -441,7 +420,8 @@ void radar_v2::parseData(QString data){
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
-            outData.fHST.frameNumber.append(data.toUtf8().at(n));
+            //outData.frameHeaderStructType_vect[vect_iterator].frameNumber.append(data.toUtf8().at(n));
+            outData.packets[outData.packets_iterator].packetHeader.frameNumber.append(data.toUtf8().at(n));
         }
         //subframeNumber
         else if(n < 32*bO){
@@ -452,7 +432,9 @@ void radar_v2::parseData(QString data){
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
-            outData.fHST.subframeNumber.append(data.toUtf8().at(n));
+            //outData.frameHeaderStructType_vect[vect_iterator].subframeNumber.append(data.toUtf8().at(n));
+            outData.packets[outData.packets_iterator].packetHeader.subframeNumber.append(data.toUtf8().at(n));
+
         }
         //chirpMargin
         else if(n < 36*bO){
@@ -463,7 +445,8 @@ void radar_v2::parseData(QString data){
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
-            outData.fHST.chirpMargin.append(data.toUtf8().at(n));
+            //outData.frameHeaderStructType_vect[vect_iterator].chirpMargin.append(data.toUtf8().at(n));
+            outData.packets[outData.packets_iterator].packetHeader.chirpMargin.append(data.toUtf8().at(n));
         }
         //frameMargin
         else if(n < 40*bO){
@@ -474,7 +457,8 @@ void radar_v2::parseData(QString data){
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
-            outData.fHST.frameMargin.append(data.toUtf8().at(n));
+            //outData.frameHeaderStructType_vect[vect_iterator].frameMargin.append(data.toUtf8().at(n));
+            outData.packets[outData.packets_iterator].packetHeader.frameMargin.append(data.toUtf8().at(n));
         }
         //uartSendTime
         else if(n < 44*bO){
@@ -485,10 +469,11 @@ void radar_v2::parseData(QString data){
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
-            outData.fHST.uartSendTime.append(data.toUtf8().at(n));
+            //outData.frameHeaderStructType_vect[vect_iterator].uartSendTime.append(data.toUtf8().at(n));
+            outData.packets[outData.packets_iterator].packetHeader.uartSendTime.append(data.toUtf8().at(n));
         }
         //trackProcessTime
-        else if(n < 48*bO){
+        else if(n < 48*bO){ //orig val n < 48*bO
             //QTextStream out(&outFile);
             if(n==44*bO){
                 //out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " " << "trackProcessTime: \t";
@@ -496,11 +481,11 @@ void radar_v2::parseData(QString data){
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
-            outData.fHST.trackProcessTime.append(data.toUtf8().at(n));
+            //outData.frameHeaderStructType_vect[vect_iterator].trackProcessTime.append(data.toUtf8().at(n));
+            outData.packets[outData.packets_iterator].packetHeader.trackProcessTime.append(data.toUtf8().at(n));
         }
 
         // !!! //numTLVs
-
         else if(n < 52*bO){
             //QTextStream out(&outFile);
             if(n==48*bO){
@@ -509,97 +494,120 @@ void radar_v2::parseData(QString data){
             }
             out << data.toUtf8().at(n);
             //qDebug() << data.toUtf8().at(n);
-            outData.fHST.numTLVs.append(data.toUtf8().at(n));
+            //outData.frameHeaderStructType_vect[vect_iterator].numTLVs.append(data.toUtf8().at(n));
+            outData.packets[outData.packets_iterator].packetHeader.numTLVs.append(data.toUtf8().at(n));
         }
-
-
-        /*
         //checksum
-        else if((n < 52*bO) && (n < 56*bO)){
+        //else if((n < 52*bO) && (n < 56*bO)){
+        else if((n > 51*bO) && (n < 54*bO)){
             //QTextStream out(&outFile);
             if(n==52*bO){
                 //out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " " << "checksum: \t\t";
                 out << "\n"<<"checksum: \t\t";
             }
             out << data.toUtf8().at(n);
-            qDebug() << data.toUtf8().at(n);
-            outData.fHST.checksum.append(data.toUtf8().at(n));
+            //qDebug() << data.toUtf8().at(n);
+            //outData.fHST.checksum.append(data.toUtf8().at(n));
+            //outData.frameHeaderStructType_vect[vect_iterator].checksum.append(data.toUtf8().at(n));
+            outData.packets[outData.packets_iterator].packetHeader.checksum.append(data.toUtf8().at(n));
         }
-        */
         //TLV_Header OR Point Cloud OR TargetObject dependent on type
         //else if((n > 56*bO)&&(n<=length)){
+
         else if((n<=length)){
             //if(n==52*bO){
             if(n<=length-25){
                 //out << "\n"<< QString::number(TLV_packets.size()) << "/" << QString::number(n)  << " " << "Other: \t\t\n";
                 //TLV Header 4+4 = 8
                     int i = 0;
-                    outData.tlvHeader_vect.resize(vect_iterator+1);
-                    outData.pointCloud_vect.resize(vect_iterator+1);
+                    //outData.tlvHeader_vect.resize(vect_iterator+1);
+                    //outData.pointCloud_vect.resize(vect_iterator+1);
+                    outData.packets[outData.packets_iterator].tlvHeader_vect.resize(outData.vect_iterator+1);
+                    outData.packets[outData.packets_iterator].pointCloud_vect.resize(outData.vect_iterator+1);
                     while(i<4){
-                        outData.tlvHeader_vect[vect_iterator].type.append(data.toUtf8().at(n));
+                        outData.packets[outData.packets_iterator].tlvHeader_vect[outData.vect_iterator].type.append(data.toUtf8().at(n));
                         i++;
                         n++;
                     }
-                        out << "\n type:" << outData.tlvHeader_vect[vect_iterator].type;
+                        out << "\n type:" << outData.packets[outData.packets_iterator].tlvHeader_vect[outData.vect_iterator].type;
                     while(i>=4 && i<8){
-                        outData.tlvHeader_vect[vect_iterator].length.append(data.toUtf8().at(n));
+                        outData.packets[outData.packets_iterator].tlvHeader_vect[outData.vect_iterator].length.append(data.toUtf8().at(n));
                         i++;
                         n++;
                     }
-                        out << "\n length:" << outData.tlvHeader_vect[vect_iterator].length;
+                        out << "\n length:" << outData.packets[outData.packets_iterator].tlvHeader_vect[outData.vect_iterator].length;
                     //PointCloud
-                    if(outData.tlvHeader_vect[vect_iterator].type.compare("0600") == 0){
+                    //if(outData.packets[packets_iterator].tlvHeader_vect[vect_iterator].type.compare("0600") == 0){
+                    if(outData.packets[outData.packets_iterator].tlvHeader_vect[outData.vect_iterator].type.contains("6") == 1){
                         //Point Cloud 4+4+4+4 = 16
+                            outData.packets[outData.packets_iterator].pointCloud_vect.resize(outData.vect_iterator+1);
                             while(i>=8 && i<24){
                                 if(i>=8 && i<12){    //range, in m
-                                    outData.point_cloud.range.append(data.toUtf8().at(n));
+                                    //outData.point_cloud.range.append(data.toUtf8().at(n));
+                                    outData.packets[outData.packets_iterator].pointCloud_vect[outData.vect_iterator].range.append(data.toUtf8().at(n));
                                 }
                                 else if(i>=12 && i<16){    //azimuth, in rad
-                                    outData.point_cloud.azimuth.append(data.toUtf8().at(n));
+                                    outData.packets[outData.packets_iterator].pointCloud_vect[outData.vect_iterator].azimuth.append(data.toUtf8().at(n));
                                 }
                                 else if(i>=16 && i<20){    //Doppler, in m/s
-                                    outData.point_cloud.doppler.append(data.toUtf8().at(n));
+                                    outData.packets[outData.packets_iterator].pointCloud_vect[outData.vect_iterator].doppler.append(data.toUtf8().at(n));
                                 }
                                 else if(i>=20 && i<24){    //SNR, ratio
-                                    outData.point_cloud.snr.append(data.toUtf8().at(n));
+                                    outData.packets[outData.packets_iterator].pointCloud_vect[outData.vect_iterator].snr.append(data.toUtf8().at(n));
                                 }
                                 i++;
                                 n++;
                             }
-                            //outData.pointCloud_vect.insert(outData.point_cloud.range)->range;
-                            outData.pointCloud_vect.resize(vect_iterator+1);
+                            out << "\n range: " << outData.packets[outData.packets_iterator].pointCloud_vect[outData.vect_iterator].range;
+                            out << "\n azimuth: " << outData.packets[outData.packets_iterator].pointCloud_vect[outData.vect_iterator].azimuth;
+                            out << "\n doppler: " << outData.packets[outData.packets_iterator].pointCloud_vect[outData.vect_iterator].doppler;
+                            out << "\n snr: " << outData.packets[outData.packets_iterator].pointCloud_vect[outData.vect_iterator].snr;
 
-                            outData.pointCloud_vect[vect_iterator].range = outData.point_cloud.range;
-                            outData.pointCloud_vect[vect_iterator].azimuth = outData.point_cloud.azimuth;
-                            outData.pointCloud_vect[vect_iterator].doppler = outData.point_cloud.doppler;
-                            outData.pointCloud_vect[vect_iterator].snr = outData.point_cloud.snr;
 
-                            out << "\n range: " << outData.pointCloud_vect[vect_iterator].range;
-                            out << "\n azimuth: " << outData.pointCloud_vect[vect_iterator].azimuth;
-                            out << "\n doppler: " << outData.pointCloud_vect[vect_iterator].doppler;
-                            out << "\n snr: " << outData.pointCloud_vect[vect_iterator].snr;
+                            //outData.pointCloud_vect[vect_iterator].range = outData.point_cloud.range;
+                            //outData.pointCloud_vect[vect_iterator].azimuth = outData.point_cloud.azimuth;
+                            //outData.pointCloud_vect[vect_iterator].doppler = outData.point_cloud.doppler;
+                            //outData.pointCloud_vect[vect_iterator].snr = outData.point_cloud.snr;
+
+
                     }
-
                     //Target Object List
-                    else if(outData.tlvHeader_vect[vect_iterator].type.compare("0700") == 0){
-                        //Target Object 4+4+4+4+4+4+4+9*4+4 = 36
-                            while(i > 16  && i<=36){
-                                out << " \nTargetObjectList: \t" << data.toUtf8().at(n);
-                                i++;
-                                n++;
-                            }
+                    //else if(outData.packets[packets_iterator].tlvHeader_vect[vect_iterator].type.compare("0700") == 0){
+                    else if(outData.packets[outData.packets_iterator].tlvHeader_vect[outData.vect_iterator].type.contains("7") == 1){
+                        //Track ID
+                        while(i<24 && i<24){
+
+                        }
+                        //posX
+                        //posY
+                        //velX
+                        //velY
+                        //accX
+                        //accY
+                        //EC - Error covariance matrix 3x3
+                        while(i > 16  && i<=36){            //Target Object 4+4+4+4+4+4+4+9*4+4 = 36
+                            out << " \nTargetObjectList: \t" << data.toUtf8().at(n);
+                            outData.packets[outData.packets_iterator].targetObject_vect[outData.vect_iterator].G.append(data.toUtf8().at(n));
+                            i++;
+                            n++;
+                        }
+                        //G - gating function
+
+
                     }
                     //Target index
-                    else if(outData.tlvHeader_vect[vect_iterator].type.compare("0800") == 0){
+                    //else if(outData.packets[packets_iterator].tlvHeader_vect[vect_iterator].type.compare("0800") == 0){
+                    else if(outData.packets[outData.packets_iterator].tlvHeader_vect[outData.vect_iterator].type.contains("8") == 1){
                         //Target Object list 1 byte
                             while(i > 36){
                                 out << " \nTargetObjectList: \t" << data.toUtf8().at(n);
+                                //outData.targetObject_vect[vect_iterator].EC.append(data.toUtf8().at(n));
+                                outData.packets[outData.packets_iterator].targetIndex_vect[outData.vect_iterator].id.append(data.toUtf8().at(n));
                                 i++;
                                 n++;
                             }
                     }
-                    vect_iterator++;
+                    //outData.vect_iterator++;
 
 
                     //The TLV data
@@ -621,14 +629,10 @@ void radar_v2::parseData(QString data){
 
     }
 
-<<<<<<< HEAD
     outData.vect_iterator++;    //added for incrementation of vector
     outData.packets_iterator++;
 
     //TLV_packets.push_back(outData); //old one
-=======
-    TLV_packets.push_back(outData);
->>>>>>> parent of fc72481 (Change structure of TLV & modification in radar_v2)
     outData.clear();
 }
 void radar_v2::saveData_byType(QString path){
