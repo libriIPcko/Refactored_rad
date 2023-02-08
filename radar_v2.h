@@ -23,6 +23,11 @@ public:
        return rand() % (max + 1 - min);
     }
 
+    int testReadFile(){
+
+        return 1;
+    }
+
     radar_v2();
     bool init(QString cfgFile_path);
     bool init_AWR1843(QString cfgFile_path);
