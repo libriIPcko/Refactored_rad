@@ -234,17 +234,28 @@ void radar_v2::on_DATA_receive(){
 //std::deque<QByteArray> packets;
 //Output from function is packed
 void radar_v2::parse_offline_data(QString path, bool asciidata){
-    qDebug() << "OK";
     readFromFile(path,asciidata);
     //savePackedData("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/ReceivedData/ParsedData/saved_PackedData.txt");
     savePackedData("C:/ti/XXX_Rad Tools Examples/AWR1843/Industrial/traffic_monitoring/18xx_68xx_traffic_monitoring/Recorded data/packetizedData.txt");
     int i = 0;
     int length = packedData.size();
+    /*
     while(i < length){
         parseData(packedData.front());
         packedData.pop_front();
         if(i == length-40){
             qDebug() << "Here";
+        }
+    }
+    */
+
+    while(i < length){
+        parseData_2(packedData.front());
+        parseData_v2_saveToFile("C:/ti/XXX_Rad Tools Examples/AWR1843/Industrial/traffic_monitoring/18xx_68xx_traffic_monitoring/Recorded data/ProcessedData/parseData_v2.txt",i);
+        packedData.pop_front();
+        i++;
+        if(i == length-40){
+            //qDebug() << "Here";
         }
     }
 }
@@ -266,16 +277,26 @@ void radar_v2::readFromFile(QString path,bool asciidata){
         QString temp;
         if(asciidata == true){
             //QString temp(file_output);
-            temp = file_output;
+            QByteArray temporary;
+            for(int i=0;i<file_output.size();i++){
+                if(file_output.at(i) != ' '){
+                    temporary.append(file_output.at(i));
+                }
+
+            }
+            temp = temporary;
         }
         else{
             //QString temp(file_output.toHex());
             temp = file_output.toHex();
         }
-        QFile out("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/ReceivedData/tst.txt");
+        /*
+        //QFile out("C:/Users/RPlsicik/Documents/QTCreatorWorkspace/Refactored_rad/ReceivedData/tst.txt");
+        QFile out("C:/Users/bob/Documents/GitHub/Refactored_rad/Processed data/OneRowOnePacket.txt");
         QTextStream out_stream(&out);
         out.open(QIODevice::WriteOnly);
         out_stream << file_output.toHex();
+        */
 
     //Finding sync
         std::deque<int> posOfPacket;
@@ -291,6 +312,7 @@ void radar_v2::readFromFile(QString path,bool asciidata){
             it++;
         }
     //Filling packet;
+        int testCounter = 0;
         QString hexVal;
         int i = posOfPacket.front();
         posOfPacket.pop_front();
@@ -301,6 +323,12 @@ void radar_v2::readFromFile(QString path,bool asciidata){
             else{
                 //hexVal.append(temp.at(i));
                 packedData.push_back(hexVal);
+                testCounter++;
+                if(packedData.back() == ""){
+                    int a =1;
+                    a++;
+                }
+
                 hexVal.clear();
                 posOfPacket.pop_front();
             }
@@ -323,7 +351,7 @@ void radar_v2::savePackedData(QString path){
     QTextStream outFile_stream(&outFile);
     outFile.open(QIODevice::WriteOnly);
     for(int it=0;it <(int) packedData.size(); it++){
-        outFile_stream << it << " - " << packedData.at(it) << "\n";
+        outFile_stream << it << ": " << packedData.at(it) << "\n";
     }
 }
 
@@ -346,9 +374,7 @@ void radar_v2::parseData(QString data){
     while(n<data.length()){
     //FrameHeaderStructType     defaultPosition
         //outData.frameHeaderStructType_vect.resize(vect_iterator+1);
-        if(n== length-500){
-            qDebug() << "Here";
-        }
+
         //sync
         if(n < 8*bO){
             //pos = n;
@@ -637,4 +663,135 @@ void radar_v2::parseData(QString data){
 }
 void radar_v2::saveData_byType(QString path){
     QString warningClear = path;
+}
+
+void radar_v2::parseData_2(QString data){
+    int b0 = 2;
+    int header_length = 52;
+    int TLV_PointCloud_length = 23; //24 without count zero
+    int TLV_TargetObject_length = 75;//76 without count zero
+    int TLV_TargetIndex_length = 1;//1 without count zero
+    QString temp;
+    int actualPosition =0;
+
+    while(actualPosition<header_length*b0){
+        temp.append(data.at(actualPosition));
+        actualPosition++;
+    }
+    parsedDat.header.push_back(temp);
+
+    //additional information
+    while(actualPosition<data.length()){
+        //Looking for TLV header
+        QString header_TLV;
+        for(int n = actualPosition;n<=actualPosition+4;n++){
+            header_TLV.append(data.at(n));
+        }
+        //parsedDat.header.push_back(header_TLV);
+        parsedDat.object_prop.resize(parsedDat.object_prop.size()+1);
+        parsedDat.object_prop[parsedDat.object_prop.size()-1].header.push_back(header_TLV);
+        header_TLV.clear();
+        //PointCloud_TLV    6
+        if(parsedDat.object_prop.size() == 96){
+            qDebug() << "Here";
+        }
+        //if(header_TLV.contains('6') == 1){
+        if(parsedDat.object_prop[parsedDat.object_prop.size()-1].header.contains('6') == 1){
+            int counter = 0;
+            QString temp;
+            while(counter < TLV_PointCloud_length*b0 && actualPosition <= data.size()){
+                temp.append(data.at(actualPosition++));
+                counter++;
+            }
+            parsedDat.object_prop.at(parsedDat.object_prop.size()-1).TLV_PointCloud.push_back(temp);
+        }
+            //TargetObject_TLV  7
+        //else if(header_TLV.contains('7') == 1){
+        else if(parsedDat.object_prop[parsedDat.object_prop.size()-1].header.contains('7') == 1){
+            int counter = 0;
+            QString temp;
+            while(counter < TLV_TargetObject_length*b0 && actualPosition <= data.size()){
+                temp.append(data.at(actualPosition++));
+                counter++;
+            }
+            parsedDat.object_prop.at(parsedDat.object_prop.size()-1).TLV_TaretObject.push_back(temp);
+        }
+            //TargetIndex_TLV   8
+        //else if(header_TLV.contains('8') == 1){
+        else if(parsedDat.object_prop[parsedDat.object_prop.size()-1].header.contains('8') == 1){
+            int counter = 0;
+            QString temp;
+            while(counter < TLV_TargetIndex_length*b0 && actualPosition <= data.size()){
+                temp.append(data.at(actualPosition++));
+                counter++;
+            }
+            parsedDat.object_prop.at(parsedDat.object_prop.size()-1).TLV_TargetIndex.push_back(temp);
+        }
+        //non identified
+        else{
+            QString temp;
+            while(actualPosition < data.size()){
+                temp.append(data.at(actualPosition++));
+            }
+            //parsedDat.object_prop.at(parsedDat.object_prop.size()).TLV_nonIdentified.push_back(temp);
+            //int a = parsedDat.object_prop.size();
+            //parsedDat.object_prop[0].TLV_nonIdentified.push_back(temp);
+
+            parsedDat.object_prop[parsedDat.object_prop.size()-1].TLV_nonIdentified.push_back(temp);
+        }
+    }
+
+}
+
+void radar_v2::parseData_v2_saveToFile(QString path,int pos){
+
+    QFile out_file(path);
+    QTextStream out_stream(&out_file);
+    if(pos == 0){
+        out_file.open(QIODevice::ReadWrite);
+        out_file.resize(0);
+    }
+    else{
+        out_file.open(QIODevice::Append);
+    }
+
+    QString temp;
+    //temp = "\n -------- packet: " , pos , " --------\n";
+    temp = QString("\n -------- pos: %1 ----------\n").arg(QString::number(pos));
+    out_stream << temp;
+    temp.clear();
+
+//Header
+    //for(int n=0;n<parsedDat.header.size();n++){
+    for(int n=0;n<parsedDat.header[parsedDat.header.size()-1].size();n++){
+        temp.append(parsedDat.header[parsedDat.header.size()-1].at(n));
+    }
+    out_stream << "HEADER: \n" + temp + "\n";
+    temp.clear();
+
+//TLV_PointCloud
+    for(int n=0;n<parsedDat.object_prop[parsedDat.object_prop.size()-1].TLV_PointCloud.size();n++){
+        temp.append(parsedDat.object_prop[parsedDat.object_prop.size()-1].TLV_PointCloud.at(n));
+    }
+    out_stream << "\t TLV_PointCloude :\n\t\t\t" + temp + "\n";
+    temp.clear();
+//TLV TaretObject
+    for(int n=0;n<parsedDat.object_prop[parsedDat.object_prop.size()-1].TLV_TaretObject.size();n++){
+        temp.append(parsedDat.object_prop[parsedDat.object_prop.size()-1].TLV_TaretObject.at(n));
+    }
+    out_stream << "\t TLV_TargetObject :\n\t\t" + temp + "\n";
+    temp.clear();
+//TLV_TargetIndex
+    for(int n=0;n<parsedDat.object_prop[parsedDat.object_prop.size()-1].TLV_TargetIndex.size();n++){
+        temp.append(parsedDat.object_prop[parsedDat.object_prop.size()-1].TLV_TargetIndex.at(n));
+    }
+    out_stream << "\t TLV_TargetIndex :\n\t\t" + temp + "\n";
+    temp.clear();
+//TLV_nonIdentified
+    for(int n=0;n<parsedDat.object_prop[parsedDat.object_prop.size()-1].TLV_nonIdentified.size();n++){
+        temp.append(parsedDat.object_prop[parsedDat.object_prop.size()-1].TLV_nonIdentified.at(n));
+    }
+    out_stream << "\t TLV_nonIdentified :\n\t\t" + temp + "\n";
+    temp.clear();
+    out_file.close();
 }

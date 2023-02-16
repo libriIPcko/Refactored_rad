@@ -14,7 +14,8 @@ SOURCES += \
         main.cpp \
         radar_v2.cpp \
         time_measure.cpp \
-        tlv_dat.cpp
+        tlv_dat.cpp \
+        tlv_dat_v2.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -25,6 +26,7 @@ HEADERS += \
     cfgFiles.h \
     radar_v2.h \
     time_measure.h \
-    tlv_dat.h
+    tlv_dat.h \
+    tlv_dat_v2.h
 
 

@@ -11,7 +11,8 @@ int main(int argc, char *argv[])
     //rad.init_AWR2243(cfg_default_AWR2243);
 
     //rad.parse_offline_data("C:/ti/XXX_Rad Tools Examples/AWR1843/Industrial/traffic_monitoring/18xx_68xx_traffic_monitoring/Recorded data/demoData.txt",true);
-    rad.testReadFile();
+    rad.parse_offline_data("C:/ti/XXX_Rad Tools Examples/AWR1843/Industrial/traffic_monitoring/18xx_68xx_traffic_monitoring/Recorded data/tm_demo_uart_stream_v1.txt",true);
+
 
 
 

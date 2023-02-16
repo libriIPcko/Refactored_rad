@@ -2,6 +2,7 @@
 #define RADAR_V2_H
 #include <time_measure.h>
 #include <tlv_dat.h>
+#include <tlv_dat_v2.h>
 
 #include <QtSerialPort/QSerialPort>
 #include <QTimer>
@@ -79,6 +80,9 @@ private:
     void readFromFile(QString path,bool asciidata);
     void savePackedData(QString path);
     void parseData(QString data);
+    tlv_dat_v2 parsedDat;
+    void parseData_2(QString data);
+    void parseData_v2_saveToFile(QString path, int pos);
     void saveData_byType(QString path);
     TLV_dat outData;
 
