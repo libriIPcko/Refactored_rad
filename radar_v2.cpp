@@ -763,33 +763,33 @@ void radar_v2::parseData_v2_saveToFile(QString path,int pos){
 
 //Header
     //for(int n=0;n<parsedDat.header.size();n++){
-    for(int n=0;n<parsedDat.header[parsedDat.header.size()-1].size();n++){
-        temp.append(parsedDat.header[parsedDat.header.size()-1].at(n));
+    for(int n=0;n<parsedDat.header[pos].size();n++){
+        temp.append(parsedDat.header[pos].at(n));
     }
     out_stream << "HEADER: \n" + temp + "\n";
     temp.clear();
 
 //TLV_PointCloud
-    for(int n=0;n<parsedDat.object_prop[parsedDat.object_prop.size()-1].TLV_PointCloud.size();n++){
-        temp.append(parsedDat.object_prop[parsedDat.object_prop.size()-1].TLV_PointCloud.at(n));
+    for(int n=0;n<parsedDat.object_prop[pos].TLV_PointCloud.size();n++){
+        temp.append(parsedDat.object_prop[pos].TLV_PointCloud.at(n));
     }
     out_stream << "\t TLV_PointCloude :\n\t\t\t" + temp + "\n";
     temp.clear();
 //TLV TaretObject
-    for(int n=0;n<parsedDat.object_prop[parsedDat.object_prop.size()-1].TLV_TaretObject.size();n++){
-        temp.append(parsedDat.object_prop[parsedDat.object_prop.size()-1].TLV_TaretObject.at(n));
+    for(int n=0;n<parsedDat.object_prop[pos].TLV_TaretObject.size();n++){
+        temp.append(parsedDat.object_prop[pos].TLV_TaretObject.at(n));
     }
     out_stream << "\t TLV_TargetObject :\n\t\t" + temp + "\n";
     temp.clear();
 //TLV_TargetIndex
-    for(int n=0;n<parsedDat.object_prop[parsedDat.object_prop.size()-1].TLV_TargetIndex.size();n++){
-        temp.append(parsedDat.object_prop[parsedDat.object_prop.size()-1].TLV_TargetIndex.at(n));
+    for(int n=0;n<parsedDat.object_prop[pos].TLV_TargetIndex.size();n++){
+        temp.append(parsedDat.object_prop[pos].TLV_TargetIndex.at(n));
     }
     out_stream << "\t TLV_TargetIndex :\n\t\t" + temp + "\n";
     temp.clear();
 //TLV_nonIdentified
-    for(int n=0;n<parsedDat.object_prop[parsedDat.object_prop.size()-1].TLV_nonIdentified.size();n++){
-        temp.append(parsedDat.object_prop[parsedDat.object_prop.size()-1].TLV_nonIdentified.at(n));
+    for(int n=0;n<parsedDat.object_prop[pos].TLV_nonIdentified.size();n++){
+        temp.append(parsedDat.object_prop[pos].TLV_nonIdentified.at(n));
     }
     out_stream << "\t TLV_nonIdentified :\n\t\t" + temp + "\n";
     temp.clear();
